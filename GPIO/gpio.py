@@ -1,4 +1,4 @@
-# !/bin/sh
+# !/bin/python3
 # -*- coding: utf-8 -*-
 
 """ Pi 4B GPIO mapping:
@@ -35,10 +35,13 @@
 
 import RPi.GPIO as GPIO
 import time
+import threading
 
-LED_PIN = 4
-IRQ_PIN = 17
+LED_PIN = 17
+IRQ_PIN = 18
+
 def Toggle():
+    GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(LED_PIN, GPIO.OUT)
 
@@ -47,24 +50,47 @@ def Toggle():
             GPIO.output(LED_PIN, not GPIO.input(LED_PIN))
             time.sleep(1)
             print("LED_PIN Level: %s" % GPIO.input(LED_PIN))
-        except KeyboardInterrupt:
+        except:
             break
 
-    print("GPIO.cleanup")
     GPIO.cleanup()
     return
 
 
-def IRQ():
+def IRQ(pin):
+    GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(IRQ_PIN, GPIO.IN)
+    GPIO.setup(pin, GPIO.IN, GPIO.PUD_UP)
+
+    print("irq test")
+    try:
+        GPIO.add_event_detect(pin, GPIO.FALLING, Toggle, 200)
+        print("Interrupt")
+    except BaseException as exp:
+        print(exp)
+
+    GPIO.cleanup()
+    return
+
+
+if __name__ == "__main__":
+    try:
+
+        t1 = threading.Thread(target=Toggle, name="led toggle")
+        t2 = threading.Thread(target=IRQ, args=(IRQ_PIN,), name="irq")
+
+        t1.start()
+        t2.start()
+
+        t1.join()
+        t2.join()
+
+    except BaseException as exp:
+        print(exp)
 
     while True:
-        try:
-            GPIO.add_event_callback()
-            time.sleep(0.5)
-        except KeyboardInterrupt:
-            break
-    print("GPIO.cleanup")
-    GPIO.cleanup()
-    return
+        pass
+
+
+
+
