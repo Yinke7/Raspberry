@@ -74,6 +74,7 @@ def Readpin(pin):
             res = GPIO.wait_for_edge(pin, GPIO.FALLING, bouncetime=200)
             if pin == res:
                 print("interrupt")
+                Toggle(LED2_PIN, False)
             else:
                 print("timeout")
         except BaseException as exp:
@@ -100,5 +101,4 @@ if __name__ == "__main__":
 
     except BaseException as exp:
         print(exp)
-
 
