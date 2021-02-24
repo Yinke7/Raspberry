@@ -30,53 +30,66 @@
  | BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
  +-----+-----+---------+------+---+---Pi 4B--+---+------+---------+-----+-----+
 
- @reference: https://tieske.github.io/rpi-gpio/modules/GPIO.html
+@reference: https://tieske.github.io/rpi-gpio/modules/GPIO.html
 """
 
 import RPi.GPIO as GPIO
 import time
 import threading
 
-LED1_PIN = 4
-LED2_PIN = 17
-IRQ_PIN = 18
 
-def Toggle(pin):
+
+IRQ_PIN = 17
+LED1_PIN = 18
+LED2_PIN = 27
+
+
+def Toggle(pin, repeat):
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(pin, GPIO.OUT)
+    if repeat:
+        while True:
+            try:
+                GPIO.output(pin, not GPIO.input(pin))
+                time.sleep(1)
+                print("BCM[%d] Level: %d" % (pin, not GPIO.input(pin)))
+            except BaseException as e:
+                print(e)
+                break
+    else:
+        GPIO.output(pin, not GPIO.input(pin))
+        print("BCM[%d] Level: %s" % (pin, GPIO.input(pin)))
 
-    while True:
-        try:
-            GPIO.output(pin, not GPIO.input(pin))
-            time.sleep(1)
-            print("BCM%d Level: %s" % (int(pin), GPIO.input(pin)))
-        except:
-            break
-    GPIO.output(pin, GPIO.LOW)
-    GPIO.cleanup()
+    GPIO.cleanup(pin)
     return
 
 
-def IRQ(pin):
+def Readpin(pin):
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(IRQ_PIN, GPIO.IN, GPIO.PUD_UP)
-    try:
-        GPIO.add_event_detect(pin, GPIO.FALLING, Toggle(LED1_PIN), 200)
-    except BaseException as exp:
-        print(exp)
+    GPIO.setup(pin, GPIO.IN, GPIO.PUD_UP)
+    while True:
+        try:
+            res = GPIO.wait_for_edge(pin, GPIO.FALLING, bouncetime=200)
+            if pin == res:
+                print("interrupt")
+            else:
+                print("timeout")
+        except BaseException as exp:
+            print(exp)
+            break
 
-    GPIO.cleanup()
+    GPIO.cleanup(pin)
     return
 
 
 if __name__ == "__main__":
     try:
         thread = []
-        t1 = threading.Thread(target=Toggle, args=(LED2_PIN, ), name="led toggle")
+        t1 = threading.Thread(target=Toggle, args=(LED1_PIN, True, ), name="led1")
         thread.append(t1)
-        t2 = threading.Thread(target=IRQ, args=(IRQ_PIN, ), name="irq")
+        t2 = threading.Thread(target=Readpin, args=(IRQ_PIN, ), name="irq")
         thread.append(t2)
 
         for t in thread:
@@ -87,3 +100,5 @@ if __name__ == "__main__":
 
     except BaseException as exp:
         print(exp)
+
+
