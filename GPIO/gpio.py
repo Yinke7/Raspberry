@@ -61,7 +61,6 @@ def Toggle(pin, repeat):
         GPIO.output(pin, not GPIO.input(pin))
         print("BCM[%d] Level: %s" % (pin, GPIO.input(pin)))
 
-    GPIO.cleanup(pin)
     return
 
 
@@ -74,14 +73,12 @@ def Readpin(pin):
             res = GPIO.wait_for_edge(pin, GPIO.FALLING, bouncetime=200)
             if pin == res:
                 print("interrupt")
-                Toggle(LED2_PIN, False)
+                Toggle(LED2_PIN, repeat=False)
             else:
                 print("timeout")
         except BaseException as exp:
             print(exp)
             break
-
-    GPIO.cleanup(pin)
     return
 
 
@@ -102,3 +99,5 @@ if __name__ == "__main__":
     except BaseException as exp:
         print(exp)
 
+    print("clean all gpio config")
+    GPIO.cleanup()
