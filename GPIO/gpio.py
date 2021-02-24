@@ -64,7 +64,7 @@ def Toggle(pin, repeat):
     return
 
 
-def Readpin(pin):
+def ReadPin(pin):
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(pin, GPIO.IN, GPIO.PUD_UP)
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         thread = []
         t1 = threading.Thread(target=Toggle, args=(LED1_PIN, True, ), name="led1")
         thread.append(t1)
-        t2 = threading.Thread(target=Readpin, args=(IRQ_PIN, ), name="irq")
+        t2 = threading.Thread(target=ReadPin, args=(IRQ_PIN, ), name="irq")
         thread.append(t2)
 
         for t in thread:
