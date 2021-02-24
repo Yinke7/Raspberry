@@ -53,7 +53,7 @@ def Toggle(pin):
             print("BCM%d Level: %s" % (int(pin), GPIO.input(pin)))
         except:
             break
-
+    GPIO.output(pin, GPIO.LOW)
     GPIO.cleanup()
     return
 
